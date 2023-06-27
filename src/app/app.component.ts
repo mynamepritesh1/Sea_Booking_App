@@ -35,30 +35,42 @@ export class AppComponent {
     }
   }
 
-  reserveSeats(): void {
+ reserveSeats(): void {
     if (this.numSeats > 0 && this.numSeats <= 7) {
       let seatsReserved = 0;
-
-      for (let row = 0; row < this.seatLayout.length; row++) {
-        for (let seat = 0; seat < this.seatLayout[row].length; seat++) {
-          if (!this.isSeatReserved(this.seatLayout[row][seat])) {
-            this.reservedSeats.push(this.seatLayout[row][seat]);
-            seatsReserved++;
-
-            if (seatsReserved === this.numSeats) {
-              this.updateReservationMessage('Seats booked successfully!');
-              return;
-            }
+      let rowIndex = 0;
+      let seatIndex = 0;
+  
+      while (seatsReserved < this.numSeats && rowIndex < this.seatLayout.length) {
+        const row = this.seatLayout[rowIndex];
+  
+        if (seatIndex + this.numSeats <= row.length) {
+          const availableSeats = row.slice(seatIndex, seatIndex + this.numSeats);
+  
+          if (availableSeats.every(seat => !this.isSeatReserved(seat))) {
+            this.reservedSeats.push(...availableSeats);
+            seatsReserved = this.reservedSeats.length;
           }
         }
+  
+        seatIndex++;
+  
+        if (seatIndex >= row.length) {
+          seatIndex = 0;
+          rowIndex++;
+        }
+      }
+  
+      if (seatsReserved === this.numSeats) {
+        this.updateReservationMessage('Seats booked successfully!');
+      } else {
+        this.updateReservationMessage('Seats not available.');
       }
     } else {
-      this.updateReservationMessage(
-        'Please enter a valid number of seats.'
-      );
+      this.updateReservationMessage('Please enter a valid number of seats.');
     }
   }
-
+  
   isSeatReserved(seat: string): boolean {
     for (let i = 0; i < this.reservedSeats.length; i++) {
       if (this.reservedSeats[i] === seat) {
